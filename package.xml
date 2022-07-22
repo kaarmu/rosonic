@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rosonic</name>
+  <version>1.0.0</version>
+  <description>Write pythonic ROS nodes</description>
+
+  <maintainer email="kajarf@kth.se">Kaj Munhoz Arfvidsson</maintainer>
+
+  <license>MIT</license>
+
+  <author email="kajarf@kth.se">Kaj Munhoz Arfvidsson</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+
+  <export></export>
+</package>
