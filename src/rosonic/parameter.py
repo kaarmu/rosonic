@@ -3,6 +3,7 @@ from copy import deepcopy
 import rospy
 
 from .name import Name
+from .container import Container
 
 
 class Parameter(object):
@@ -21,6 +22,14 @@ class Parameter(object):
 
     def __get__(self, instance, owner):
         return self.value if self.is_loaded else self
+
+    @staticmethod
+    def load_from(container):
+        Container.map(
+            Parameter.load,
+            Parameter,
+            container,
+        )
 
     def load(self):
 

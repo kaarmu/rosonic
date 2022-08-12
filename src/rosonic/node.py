@@ -1,12 +1,18 @@
 import rospy
 
+from .name import Name
+from .argument import Argument
+from .parameter import Parameter
+from .shutdown import OnShutdown
 from .container import Container
 
+# Hack: A container can contain containers, for possibility of recursive iteration
+@Container(Argument)
+@Container(Parameter)
+@Container(OnShutdown)
+class Node(object):
 
-class Node(Container):
-
-    name = None
-    rate = None
+    name = ''
 
     # For convenience...
     logdebug = rospy.logdebug
@@ -14,24 +20,40 @@ class Node(Container):
     loginfo = rospy.loginfo
     logerr = rospy.logerr
     logfatal = rospy.logfatal
+    is_shutdown = rospy.is_shutdown
 
-    @classmethod
-    def run(cls, load_params=True, **kwargs):
-        """Create and run node"""
+    def __new__(cls, load_params=True, load_args=True, description=None, **kwargs):
 
-        # Pick class name as default node name
-        cls.name = cls.name or cls.__name__
+        ## Initialize ROS node
 
-        # Create a Rate object from int
-        if isinstance(cls.rate, int):
-            cls.rate = rospy.Rate(cls.rate)
+        # Pick class name as default node name, then check if basename
+        self.name = cls.name or cls.__name__
+        assert Name(self.name).is_basename, 'Node must be named with a ROS basename'
 
-        rospy.init_node(cls.name, **kwargs)
+        rospy.init_node(self.name, **kwargs)
+
+        ## Load parameters/arguments
+
+        if load_args:
+            Argument.parse_from(cls, prog=cls.name, description=description)
 
         if load_params:
-            cls.load_params()
+            Parameter.load_from(cls)
 
-        return cls().main()
+        ## Create and run node
+
+        self = super(Node, cls).__new__(cls)
+
+        self.__init__()
+
+        try:
+            return self.main()
+        finally:
+            Container.map(
+                lambda x: x.func(self),
+                OnShutdown,
+                cls
+            )
 
     def main(self):
         while self.keep_alive():
@@ -53,8 +75,9 @@ class Node(Container):
     def log(cls, msg, *args, **kwargs):
         """Log from this node consistently"""
         level = getattr(kwargs, 'level', 'info')
-        logfn = getattr(cls, 'log' + level, cls.loginfo)
-        logfn('(%s) %s', msg % args)
+        logfn = getattr(rospy, 'log' + level)
+        assert logfn is not None, 'Invalid logging level %s' % level
+        logfn('(%s) %s', cls.name, msg % args)
 
     @classmethod
     def logevent(cls, msg, *args, **kwargs):
@@ -65,11 +88,6 @@ class Node(Container):
     def sleep(time):
         """Perform rospy.sleep for time amount of seconds"""
         rospy.sleep(rospy.Duration.from_sec(time))
-
-    @staticmethod
-    def is_shutdown():
-        """Return if the node is shutdown or not"""
-        return rospy.is_shutdown()
 
     @staticmethod
     def shutdown():
