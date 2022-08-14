@@ -38,4 +38,5 @@ class Timer(object):
         self.callback = f
         if self.autostart:
             self.start()
+        return self
 
