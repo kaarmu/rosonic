@@ -15,12 +15,12 @@ class Node(object):
     name = ''
 
     # For convenience...
-    logdebug = rospy.logdebug
-    logwarn = rospy.logwarn
-    loginfo = rospy.loginfo
-    logerr = rospy.logerr
-    logfatal = rospy.logfatal
-    is_shutdown = rospy.is_shutdown
+    logdebug = staticmethod(rospy.logdebug)
+    logwarn = staticmethod(rospy.logwarn)
+    loginfo = staticmethod(rospy.loginfo)
+    logerr = staticmethod(rospy.logerr)
+    logfatal = staticmethod(rospy.logfatal)
+    is_shutdown = staticmethod(rospy.is_shutdown)
 
     def __new__(cls, load_params=True, load_args=True, description=None, **kwargs):
 
