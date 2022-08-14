@@ -4,28 +4,33 @@ BAGS_FIELD = '__container_bags__'
 
 class Container(object):
 
-    def __init__(self, t):
-        self.t = t
+    def __new__(cls):
 
-    def __call__(self, cls):
-        """Register a new bag for type `self.t` in `cls`."""
-
-        # Create bag
         bags = getattr(cls, BAGS_FIELD, {})
-        bags[self.t] = []
-
-        # Load bag
-        for _, x in vars(cls).items():
-            if isinstance(x, self.t):
-                bags[self.t].append(x)
-
-        setattr(cls, BAGS_FIELD, bags)
 
         # Check if special bag for recursion exist
         if Container not in bags:
-            Container(Container)(cls)
+            Container.register(Container)(cls)
 
-        return cls
+        # Load bags
+        for t, bag in bags.items():
+            for _, x in vars(cls).items():
+                if isinstance(x, t):
+                    bags[t].append(x)
+    
+        return super(Container, cls).__new__(cls)
+
+    @staticmethod
+    def register(t):
+        """Register a new bag for type `t` in `cls`."""
+
+        def decorator(cls):
+            bags = getattr(cls, BAGS_FIELD, {})
+            bags[t] = []
+            setattr(cls, BAGS_FIELD, bags)
+            return cls
+
+        return decorator
 
     @staticmethod
     def map(f, t, self, recurse=True):
@@ -78,8 +83,8 @@ if __name__ == '__main__':
             self.v += 1
 
 
-    @Container(P)
-    class N(object):
+    @Container.register(P)
+    class N(Container):
 
         a = P(1)
         b = P(2)

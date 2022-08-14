@@ -5,6 +5,8 @@ import rospy
 from .name import Name
 from .container import Container
 
+class ParameterError(Exception):
+    pass
 
 class Parameter(object):
 
@@ -38,7 +40,7 @@ class Parameter(object):
         elif rospy.has_param(str(self.name)):
             self.value = rospy.get_param(str(self.name))
         else:
-            raise KeyError('Parameter server does not recognize %s' % str(self.name))
+            raise ParameterError('Parameter server does not recognize "%s"' % str(self.name))
 
         for func in self.func_stack:
             self.value = func(self.value)

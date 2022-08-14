@@ -1,20 +1,4 @@
-from functools import wraps
-
 import rospy
-
-
-class Rate(object):
-
-    def __init__(self, hz):
-        self.rate = rospy.Rate(hz)
-
-    def __call__(self, f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            ret = f(*args, **kwargs)
-            self.rate.sleep()
-            return ret
-        return wrapper
 
 
 class Timer(object):
@@ -30,7 +14,7 @@ class Timer(object):
         assert self.callback is not None, 'Missing callback'
         self.timer = rospy.Timer(self.period, self.callback, self.oneshot)
 
-    def shutdown(self):
+    def cancel(self):
         assert self.timer is not None, 'Missing timer'
         self.timer.shutdown()
 

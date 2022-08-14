@@ -25,9 +25,9 @@ class Argument(object):
     def parse_from(container, *args, **kwargs):
         parser = ArgumentParser(*args, **kwargs)
         Container.map(
-            lambda x: x.add_argument(parser),
+            lambda self: self.add_argument(parser),
             Argument,
-            container
+            container,
         )
         setattr(container, ARGPARSE_FIELD, parser.parse_args())
 

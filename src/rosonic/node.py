@@ -3,16 +3,16 @@ import rospy
 from .name import Name
 from .argument import Argument
 from .parameter import Parameter
-from .shutdown import OnShutdown
+from .on_shutdown import OnShutdown
 from .container import Container
 
-# Hack: A container can contain containers, for possibility of recursive iteration
-@Container(Argument)
-@Container(Parameter)
-@Container(OnShutdown)
-class Node(object):
+@Container.register(OnShutdown)
+@Container.register(Parameter)
+@Container.register(Argument)
+class Node(Container):
 
     name = ''
+    rate = 1e9
 
     # For convenience...
     logdebug = staticmethod(rospy.logdebug)
@@ -27,38 +27,41 @@ class Node(object):
         ## Initialize ROS node
 
         # Pick class name as default node name, then check if basename
-        self.name = cls.name or cls.__name__
-        assert Name(self.name).is_basename, 'Node must be named with a ROS basename'
+        cls.name = cls.name or cls.__name__
+        assert Name(cls.name).is_basename, 'Node must be named with a ROS basename'
 
-        rospy.init_node(self.name, **kwargs)
-
-        ## Load parameters/arguments
-
-        if load_args:
-            Argument.parse_from(cls, prog=cls.name, description=description)
-
-        if load_params:
-            Parameter.load_from(cls)
+        rospy.init_node(cls.name, **kwargs)
 
         ## Create and run node
 
         self = super(Node, cls).__new__(cls)
 
+        # Load all `Argument`
+        if load_args:
+            Argument.parse_from(self, prog=cls.name, description=description)
+
+        # Load all `Parameter`
+        if load_params:
+            Parameter.load_from(self)
+
+        # Register all `OnShutdown`
+        OnShutdown.register_from(self)
+
+        # Initialize rate
+        if isinstance(self.rate, (int, float)):
+            self.rate = rospy.Rate(self.rate)
+
+        # Initialize node (user defined)
         self.__init__()
 
-        try:
-            return self.main()
-        finally:
-            Container.map(
-                lambda x: x.func(self),
-                OnShutdown,
-                cls
-            )
+        # Run main loop
+        self.main()
 
     def main(self):
         while self.keep_alive():
             self.spin()
-        self.shutdown()
+            self.rate.sleep()
+        self.shutdown('Node "%s" finished', self.name)
 
     def keep_alive(self):
         """Predicate for running main loop"""
@@ -90,6 +93,6 @@ class Node(object):
         rospy.sleep(rospy.Duration.from_sec(time))
 
     @staticmethod
-    def shutdown():
+    def shutdown(reason, *args):
         """Trigger shutdown"""
-        raise rospy.ROSInterruptException()
+        rospy.signal_shutdown(reason % args)
