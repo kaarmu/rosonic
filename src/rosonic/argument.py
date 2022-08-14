@@ -1,4 +1,7 @@
 from argparse import ArgumentParser
+import sys
+
+import rospy
 
 from .container import Container
 
@@ -23,13 +26,17 @@ class Argument(object):
 
     @staticmethod
     def parse_from(container, *args, **kwargs):
-        parser = ArgumentParser(*args, **kwargs)
-        Container.map(
-            lambda self: self.add_argument(parser),
-            Argument,
-            container,
-        )
-        setattr(container, ARGPARSE_FIELD, parser.parse_args())
+        if Container.any(Argument, container):
+            # Create parser
+            parser = ArgumentParser(*args, **kwargs)
+            Container.map(
+                lambda self: self.add_argument(parser),
+                Argument,
+                container,
+            )
+            # Parse argv, making sure to strip any special ROS args
+            argv = rospy.myargv(argv=sys.argv)
+            setattr(container, ARGPARSE_FIELD, parser.parse_args(argv))
 
     def add_argument(self, parser):
         store_action = parser.add_argument(*self.args, **self.kwargs)

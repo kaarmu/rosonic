@@ -17,7 +17,7 @@ class Container(object):
             for _, x in vars(cls).items():
                 if isinstance(x, t):
                     bags[t].append(x)
-    
+
         return super(Container, cls).__new__(cls)
 
     @staticmethod
@@ -33,15 +33,47 @@ class Container(object):
         return decorator
 
     @staticmethod
+    def any(t, self, recurse=True):
+        """
+        Check if `self` contains any fields of type `t`.
+
+        Mnemonic:
+            Are there any `t` in `self`?
+
+        If `recurse` is true then perform `Container.any(t, x)`
+        for any `x` of type `Container`.
+
+        Returns `True` or `False`.
+        """
+        bags = getattr(self, BAGS_FIELD, {})
+
+        # If there exist anything in bag the for `t`, then
+        # `self` has a field of type `t`.
+        if t in bags and bags[t]:
+            return True
+
+        # `Container.map` will return a list of bools that is results
+        # from `Container.any`.
+        if recurse:
+            return any(Container.map(
+                lambda x: Container.any(t, x),
+                Container,
+                self,
+                recurse=False,
+            ))
+
+        return False
+
+    @staticmethod
     def map(f, t, self, recurse=True):
         """
         For fields in `self` of type `t`, apply function `f`.
 
-        Always think the sentence:
-            Map `f` on all `t` inside `self`
+        Mnemonic:
+            Map `f` on all `t` inside `self`.
 
-        If `recurse` is true then perform `Container.map`
-        applied on fields of type `Container`.
+        If `recurse` is true then perform `Container.any(f, t, x)`
+        for any `x` of type `Container`.
 
         Returns list of results from `f`.
         """
