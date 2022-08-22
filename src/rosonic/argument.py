@@ -25,7 +25,7 @@ class Argument(object):
         return 'Argument({}, {}, {})'.format(self.dest, self.args, self.kwargs)
 
     @staticmethod
-    def parse_from(container, *args, **kwargs):
+    def process_arguments(container, *args, **kwargs):
         if Container.any(Argument, container):
             # Create parser
             parser = ArgumentParser(*args, **kwargs)

@@ -21,13 +21,14 @@ class Container(object):
         return super(Container, cls).__new__(cls)
 
     @staticmethod
-    def register(t):
+    def register(*types):
         """Register a new bag for type `t` in `cls`."""
 
         def decorator(cls):
-            bags = getattr(cls, BAGS_FIELD, {})
-            bags[t] = []
-            setattr(cls, BAGS_FIELD, bags)
+            for t in types:
+                bags = getattr(cls, BAGS_FIELD, {})
+                bags[t] = []
+                setattr(cls, BAGS_FIELD, bags)
             return cls
 
         return decorator

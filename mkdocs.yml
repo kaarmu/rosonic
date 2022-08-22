@@ -1,0 +1,7 @@
+site_name: rosonic
+theme: readthedocs
+nav:
+  - Home: index.md
+  - Motivation: motivation.md
+plugins:
+  - with-pdf

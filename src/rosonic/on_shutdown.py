@@ -16,7 +16,7 @@ class OnShutdown(object):
         return self
 
     @staticmethod
-    def register_from(container):
+    def process_onshutdown(container):
 
         # Bind shutdown callbacks to container
         fs = Container.map(

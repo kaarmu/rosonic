@@ -10,10 +10,10 @@ class ParameterError(Exception):
 
 class Parameter(object):
 
-    def __init__(self, name, value=None, required=True, **kwargs):
+    def __init__(self, name, value=None, optional=True, **kwargs):
 
         self.is_loaded = False
-        self.is_optional = not required or value is not None
+        self.is_optional = optional or value is not None
         self.func_stack = []
 
         self.name = Name(name, **kwargs)
@@ -26,7 +26,7 @@ class Parameter(object):
         return self.value if self.is_loaded else self
 
     @staticmethod
-    def load_from(container):
+    def process_parameters(container):
         Container.map(
             Parameter.load,
             Parameter,

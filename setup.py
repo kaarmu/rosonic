@@ -1,14 +1,24 @@
-## ! DO NOT INVOKE THIS setup.py, USE CATKIN INSTEAD
+from setuptools import setup
 
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+with open('README.md') as f:
+    long_description = f.read()
 
-# fetch values from package.xml
-setup_args = generate_distutils_setup(
-    scripts=[],
-    packages=['rosonic'],
+setup(
+    name='rosonic',
+    version='0.2',
+    description='Write pythonic ROS nodes, fast and comfortably',
+    author='Kaj Munhoz Arfvidsson',
+    author_email='kajarf@kth.se',
+    url='https://github.com/kaarmu/rosonic',
+    license='MIT',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    python_requires='>=2.7',
+    install_requires=['rospy>=1.14'],
+    extras_require={
+        'docs': ['mkdocs', 'mkdocs-with-pdf', ],
+    },
     package_dir={'': 'src'},
-    requires=['rospy'],
+    packages=['rosonic'],
+    provides=['rosonic'],
 )
-
-setup(**setup_args)

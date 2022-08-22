@@ -6,12 +6,14 @@ from .parameter import Parameter
 from .on_shutdown import OnShutdown
 from .container import Container
 
-@Container.register(OnShutdown)
-@Container.register(Parameter)
-@Container.register(Argument)
+
+class something:
+    pass
+
+@Container.register(OnShutdown, Argument, Parameter)
 class Node(Container):
 
-    name = ''
+    node_name = ''
     rate = 1e9
 
     # For convenience...
@@ -22,30 +24,30 @@ class Node(Container):
     logfatal = staticmethod(rospy.logfatal)
     is_shutdown = staticmethod(rospy.is_shutdown)
 
-    def __new__(cls, load_params=True, load_args=True, description=None, **kwargs):
+    def __new__(cls, process_params=True, process_args=True, description=None, **kwargs):
 
         ## Initialize ROS node
 
         # Pick class name as default node name, then check if basename
-        cls.name = cls.name or cls.__name__
-        assert Name(cls.name).is_basename, 'Node must be named with a ROS basename'
+        cls.node_name = cls.node_name or cls.__name__
+        assert Name(cls.node_name).is_basename, 'Node must be named with a ROS basename'
 
-        rospy.init_node(cls.name, **kwargs)
+        rospy.init_node(cls.node_name, **kwargs)
 
         ## Create and run node
 
         self = super(Node, cls).__new__(cls)
 
         # Load all `Argument`
-        if load_args:
-            Argument.parse_from(self, prog=cls.name, description=description)
+        if process_args:
+            Argument.process_arguments(self, prog=cls.node_name, description=description)
 
         # Load all `Parameter`
-        if load_params:
-            Parameter.load_from(self)
+        if process_params:
+            Parameter.process_parameters(self)
 
         # Register all `OnShutdown`
-        OnShutdown.register_from(self)
+        OnShutdown.process_onshutdown(self)
 
         # Initialize rate
         if isinstance(self.rate, (int, float)):
