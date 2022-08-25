@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Get started - rosonic</title>
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Get started";
+    var mkdocs_page_input_path = "get-started.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> rosonic</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../motivation/">Motivation</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Get started</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#example-1">Example 1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#example-1-explained">Example 1 -- Explained</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#example-2">Example 2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#example-2-explained">Example 2 -- Explained</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#example-3">Example 3</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#example-3-explained">Example 3 -- Explained</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#whats-next">What's next?</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">rosonic</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Get started</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="get-started">Get started<a class="headerlink" href="#get-started" title="Permanent link">&para;</a></h1>
+<h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h2>
+<p><code>rosonic</code> has been developed for ROS Melodic and above, i.e Python 2.7,
+Python 3.6 and above. However, at writing moment only Python 3.6 has been
+tested. As soon as I&rsquo;m transitioning my other projects to Noetic then I will
+drop any support for Python 2.7.</p>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<p>This package is available on PyPI and can be installed as a normal pip package.</p>
+<pre><code class="language-shell">pip install rosonic
+</code></pre>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<p>There will be two nodes for counting numbers in this example. The first simply
+publishes a <code>uint32</code> that increases each iteration until it wraps around
+and starts over. The other node subscribes to the <code>uint32</code> and publishes a
+<code>string</code> with binary, and possibly hexadecimal, representation. Let&rsquo;s start
+by breaking down the code for the first node.</p>
+<h3 id="example-1">Example 1<a class="headerlink" href="#example-1" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">#! /usr/bin/env python
+
+from rosonic import Node, Parameter
+from rospy import Publisher
+from std_msgs.msg import UInt32
+
+
+class uint_counter(Node):
+
+    START = Parameter('~start', 0)
+
+    rate = 4
+
+    def __init__(self):
+        self.value = self.START
+        self.pub_counter = Publisher('counter', UInt32, queue_size=1)
+
+    def spin(self):
+        self.pub_counter.publish(self.value)
+        self.value += 1
+        self.value %= 32
+
+
+if __name__ == '__main__':
+
+    uint_counter(anonymous=True)
+</code></pre>
+<h3 id="example-1-explained">Example 1 &ndash; Explained<a class="headerlink" href="#example-1-explained" title="Permanent link">&para;</a></h3>
+<p>We import <code>Node</code> and <code>Parameter</code> from <code>rosonic</code>. You should still import other
+<code>rospy</code> tools as you need them. There are neither a special <code>Publisher</code> or
+<code>Subscriber</code> in <code>rosonic</code> yet so we need to use <code>rospy</code>&lsquo;s for now.</p>
+<pre><code class="language-python">from rosonic import Node, Parameter
+from rospy import Publisher
+from std_msgs.msg import UInt32
+</code></pre>
+<p>We setup a class to declare the node. The name of the class will be the default
+name of the node (just as when you call <code>rospy.init_node('&lt;name&gt;')</code>. The
+special field <code>rate</code> will be turned into a <code>rospy.Rate</code> used to control how
+often <code>spin</code> will be called.</p>
+<pre><code class="language-python">class uint_counter(Node):
+
+    START = Parameter('~start', 0)
+
+    rate = 4
+</code></pre>
+<p>One of the benefits of viewing nodes as classes is the clear separation of
+initialization and the rest of its lifetime. During initialization we want
+to create resources like publishers, subscribers, services, action-servers
+and more. It is here we use parameters and setup the runtime behvaiour. In
+<code>rosonic</code> we naturally utilize the <code>__init__</code> method with no arguments but
+<code>self</code>.</p>
+<pre><code class="language-python">class uint_counter(Node):
+
+    ...
+
+    def __init__(self):
+        self.value = self.START
+        self.pub_counter = Publisher('counter', UInt32, queue_size=1)
+</code></pre>
+<p>The innovation of <code>rosonic</code> nodes is very simple, but constitutes of three
+different methods. <code>__init__</code> that was previously mentioned, <code>main</code> and <code>spin</code>.
+In most cases you will <strong>not</strong> want to change <code>main</code> whose default behaviour
+will loop over a call <code>spin</code>. <code>spin</code>, on the other hand, is <em>meant</em> to be
+overloaded. In this example we publish and update the <code>uint32</code> value.</p>
+<pre><code class="language-python">class uint_counter(Node):
+
+    ...
+
+    def spin(self):
+        self.pub_counter.publish(self.value)
+        self.value += 1
+        self.value %= 32
+</code></pre>
+<p>Finally we are ready to start our node! As if it were a normal function we can
+call <code>uint_counter</code> (with key-word arguments passed to <code>rospy.init_node</code>) and
+run the code. This code snippet is required for every <code>rosonic</code>-style node.</p>
+<pre><code class="language-python">if __name__ == '__main__':
+
+    uint_counter(anonymous=True)
+</code></pre>
+<h3 id="example-2">Example 2<a class="headerlink" href="#example-2" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">#! /usr/bin/env python
+
+from rosonic import Node, Parameter
+from rospy import Publisher, Subscriber
+from std_msgs.msg import UInt32, String
+
+
+class str_counter(Node):
+
+    HEX = Parameter('~hex', False)
+
+    def __init__(self):
+
+        self.pub_bin_counter = Publisher(
+            'bin',
+            String,
+            queue_size=1,
+        )
+
+        self.pub_hex_counter = Publisher(
+            'hex',
+            String,
+            queue_size=1,
+        )
+
+        self.sub_uint_counter = Subscriber(
+            'counter',
+            UInt32,
+            self.uint_counter_cb,
+        )
+
+    def uint_counter_cb(self, msg):
+
+        data = msg.data
+        hex_msg = String('hex=' + hex(data))
+        bin_msg = String('bin=' + bin(data))
+
+        if self.HEX:
+            self.pub_hex_counter.publish(hex_msg)
+
+        self.pub_bin_counter.publish(bin_msg)
+
+
+if __name__ == '__main__':
+
+    str_counter(anonymous=True)
+</code></pre>
+<h3 id="example-2-explained">Example 2 &ndash; Explained<a class="headerlink" href="#example-2-explained" title="Permanent link">&para;</a></h3>
+<p>Just like in Example 1 we start by declaring a <code>Node</code> class, any parameters
+and its initialization. Notice that we have a subscriber this time!</p>
+<pre><code class="language-python">class str_counter(Node):
+
+    HEX = Parameter('~hex', False)
+
+    def __init__(self):
+
+        self.pub_bin_counter = Publisher(
+            'bin',
+            String,
+            queue_size=1,
+        )
+
+        self.pub_hex_counter = Publisher(
+            'hex',
+            String,
+            queue_size=1,
+        )
+
+        self.sub_uint_counter = Subscriber(
+            'counter',
+            UInt32,
+            self.uint_counter_cb,
+        )
+</code></pre>
+<p>There is no problem using a method as the callback. Having <code>self</code> in the
+callback allow us to use resources belonging to the class. It is therefore no
+need to have any global variables and we can rest assured that <code>data</code>,
+<code>hex_str</code> and <code>bin_str</code> are all contained in this scope.</p>
+<pre><code class="language-python">class str_counter(Node):
+
+    ...
+
+    def uint_counter_cb(self, msg):
+
+        data = msg.data
+        hex_msg = String('hex=' + hex(data))
+        bin_msg = String('bin=' + bin(data))
+
+        if self.HEX:
+            self.pub_hex_counter.publish(hex_msg)
+
+        self.pub_bin_counter.publish(bin_msg)
+</code></pre>
+<p>Then we start the node, just as we did last time! This time we did not overload
+<code>spin</code> which is also fine. Let&rsquo;s look at Example 3 to investigate this.</p>
+<pre><code class="language-python">if __name__ == '__main__':
+
+    str_counter(anonymous=True)
+</code></pre>
+<h3 id="example-3">Example 3<a class="headerlink" href="#example-3" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">#! /usr/bin/env python
+
+from rosonic import Node
+
+
+class dummy(Node):
+    pass
+
+
+if __name__ == '__main__':
+
+    dummy(anonymous=True)
+</code></pre>
+<h3 id="example-3-explained">Example 3 &ndash; Explained<a class="headerlink" href="#example-3-explained" title="Permanent link">&para;</a></h3>
+<p>The purpose of <code>str_counter</code> was to react to <code>uint_counter</code> and only use its
+one callback. Normally we would call <code>rospy.spin</code> at the end in such nodes.
+However, this happens automatically in <code>rosonic</code>. Remember <code>__init__</code>, <code>main</code>
+and <code>spin</code>? Well, by default <code>spin</code> calls <code>rospy.spin</code>! Lets look at the
+default behaviour of our <code>dummy</code> node.</p>
+<p>When <code>dummy</code> is called it will (as with any Python class) run <code>__init__</code> for
+initialization. This is up to you to decide if it&rsquo;s necessary or not.</p>
+<pre><code class="language-python">if __name__ == '__main__':
+
+    dummy(anonymous=True)
+</code></pre>
+<p>The next step, called internally by <code>rosonic</code>, is <code>main</code>. It will look
+something like a while-loop that keeps calling <code>spin</code>. The loop is conditioned
+by <code>keep_alive</code> (that you can also overload if necessary) that by default
+returns <code>not rospy.is_shutdown()</code>.</p>
+<pre><code class="language-python">class Node(...):
+
+    ...
+
+    def main(self):
+        while self.keep_alive():
+            self.spin()
+            self.rate.sleep()
+        self.shutdown()
+</code></pre>
+<p>Then there is <code>spin</code> that calls <code>rospy.spin</code>. This essentially means that
+after <code>__init__</code> is done, if neither <code>main</code> or <code>spin</code> is overloaded, then the
+node will fall into <code>rospy.spin</code> until the node is shutdown.</p>
+<pre><code class="language-python">class Node(...):
+
+    ...
+
+    def spin(self):
+        rospy.spin()
+</code></pre>
+<h3 id="whats-next">What&rsquo;s next?<a class="headerlink" href="#whats-next" title="Permanent link">&para;</a></h3>
+<p>If you want to learn more about <code>rosonic</code>&lsquo;s features I recommend you to read
+the source code. You are also free to contribute with ideas through issue
+tickets or PR&rsquo;s.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../motivation/" class="btn btn-neutral" title="Motivation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../motivation/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
