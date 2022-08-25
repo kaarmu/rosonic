@@ -7,14 +7,14 @@ allows for a more comfortable workflow, the code becomes more "natural" and
 easier to understand.
 
 To alleviate some of the issues described in [Motivation](docs/motivation.md)
-`rosonic` tries to gently "force" the user to follow a design pattern. Namely, 
-`rosonic` conceptualizes a ROS node as a class in a simple, pythonic way with 
-reasonable default behaviours. 
+`rosonic` tries to gently "force" the user to follow a design pattern. Namely,
+`rosonic` conceptualizes a ROS node as a class in a simple, pythonic way with
+reasonable default behaviours.
 
 
 ## Requirements
 
-`rosonic` has been developed for ROS Melodic and above, i.e Python 2.7, 
+`rosonic` has been developed for ROS Melodic and above, i.e Python 2.7,
 Python 3.6 and above. However, at writing moment only Python 3.6 has been
 tested. As soon as I'm transitioning my other projects to Noetic then I will
 drop any support for Python 2.7.
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 ```
 
 The default behaviour of a `rosonic.Node` will be to call `rospy.spin`. This is
-useful for the "Subscriber" and "Pub-Sub" patterns in 
+useful for the "Subscriber" and "Pub-Sub" patterns in
 [Motivation](docs/motivation.md), then we only need to implement initialization
 and callbacks. For the initialization, just create a normal `__init__` for the
 class that doesn't take any arguments. Any resources, e.g. `pub`, can be set as
@@ -103,7 +103,7 @@ class my_node(Node):
 
 ### Parameters as class attributes
 
-> It isn't the mountain ahead that wears you out - it's the grain of sand in 
+> It isn't the mountain ahead that wears you out - it's the grain of sand in
 > your shoe
 
 What's the easiest way to declare a parameter? Maybe like this...
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     my_node()
 ```
 
-That's the `rosonic` way at least! You don't have to care about asserting 
+That's the `rosonic` way at least! You don't have to care about asserting
 existence or managing scoping rules. Since they are class fields you have them
 available all the time. If `Parameter` is not given a default value nor is the
 `optional` argument set, then `Parameter` checks for existence at load time.
@@ -133,6 +133,6 @@ available all the time. If `Parameter` is not given a default value nor is the
 
 ## A very slim implementation
 
-`rosonic` tries to be very slim. There is some complexity regarding class 
+`rosonic` tries to be very slim. There is some complexity regarding class
 fields. However, it takes 5 minutes to look through the ROS relevant parts. So,
 see the implementation as the real documentation!
