@@ -63,7 +63,7 @@ class Node(Container):
         while self.keep_alive():
             self.spin()
             self.rate.sleep()
-        self.shutdown('Node "%s" finished', self.name)
+        self.shutdown('Node "%s" finished', self.node_name)
 
     def keep_alive(self):
         """Predicate for running main loop"""
@@ -82,7 +82,7 @@ class Node(Container):
         level = getattr(kwargs, 'level', 'info')
         logfn = getattr(rospy, 'log' + level)
         assert logfn is not None, 'Invalid logging level %s' % level
-        logfn('(%s) %s', cls.name, msg % args)
+        logfn('(%s) %s', cls.node_name, msg % args)
 
     @classmethod
     def logevent(cls, msg, *args, **kwargs):
