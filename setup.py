@@ -9,7 +9,7 @@ setup(
     description='Write pythonic ROS nodes, fast and comfortably',
     author='Kaj Munhoz Arfvidsson',
     author_email='kajarf@kth.se',
-    url='https://github.com/kaarmu/rosonic',
+    url='https://kaarmu.github.io/rosonic/',
     license='MIT',
     long_description=long_description,
     long_description_content_type='text/markdown',
