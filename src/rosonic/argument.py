@@ -3,7 +3,7 @@ import sys
 
 import rospy
 
-from .container import Container
+from . import fields
 
 ARGPARSE_FIELD = '__argparse__'
 
@@ -24,13 +24,17 @@ class Argument(object):
     def __repr__(self):
         return 'Argument({}, {}, {})'.format(self.dest, self.args, self.kwargs)
 
+    def process(self, parser):
+        store_action = parser.add_argument(*self.args, **self.kwargs)
+        self.dest = store_action.dest
+
     @staticmethod
-    def process_arguments(container, *args, **kwargs):
-        if Container.any(Argument, container):
+    def process_all(container, *args, **kwargs):
+        if fields.any(Argument, container):
             # Create parser
             parser = ArgumentParser(*args, **kwargs)
-            Container.map(
-                lambda self: self.add_argument(parser),
+            fields.map(
+                lambda self: self.process(parser),
                 Argument,
                 container,
             )
@@ -38,23 +42,18 @@ class Argument(object):
             argv = rospy.myargv(argv=sys.argv)
             setattr(container, ARGPARSE_FIELD, parser.parse_args(argv))
 
-    def add_argument(self, parser):
-        store_action = parser.add_argument(*self.args, **self.kwargs)
-        self.dest = store_action.dest
-
-
 #
 # Example
 #
 
 if __name__ == '__main__':
 
-    @Container(Argument)
+    @fields.register(Argument)
     class Node(object):
         foo = Argument('foo', nargs=3)
         bar = Argument('bar', nargs=2)
 
-    Argument.parse_from(Node, prog='Node')
+    Argument.process_all(Node, prog='Node')
 
     node = Node()
     print('Node.foo', node.foo)

@@ -1,7 +1,11 @@
+import rospy
 
 class Name(object):
 
-    def __init__(self, name, namespace=None, is_private=False, is_global=False):
+    def __init__(self, name=None, namespace=None, is_private=False, is_global=False):
+
+        if name is None:
+            name = rospy.get_name()
 
         assert isinstance(name, str), 'Name must be a string'
         assert name, 'Empty string is not a valid name'

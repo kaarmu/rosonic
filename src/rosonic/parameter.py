@@ -3,7 +3,7 @@ from copy import deepcopy
 import rospy
 
 from .name import Name
-from .container import Container
+from . import fields
 
 class ParameterError(Exception):
     pass
@@ -25,15 +25,7 @@ class Parameter(object):
     def __get__(self, instance, owner):
         return self.value if self.is_loaded else self
 
-    @staticmethod
-    def process_parameters(container):
-        Container.map(
-            Parameter.load,
-            Parameter,
-            container,
-        )
-
-    def load(self):
+    def process(self):
 
         if self.is_optional:
             self.value = rospy.get_param(str(self.name), self.value)
@@ -46,6 +38,14 @@ class Parameter(object):
             self.value = func(self.value)
 
         self.is_loaded = True
+
+    @staticmethod
+    def process_all(container):
+        fields.map(
+            Parameter.process,
+            Parameter,
+            container,
+        )
 
     def copy(self):
         return deepcopy(self)

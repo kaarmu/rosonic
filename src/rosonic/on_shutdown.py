@@ -2,7 +2,7 @@ from functools import partial
 
 import rospy
 
-from .container import Container
+from . import fields
 
 
 class OnShutdown(object):
@@ -16,12 +16,12 @@ class OnShutdown(object):
         return self
 
     @staticmethod
-    def process_onshutdown(container):
+    def process_all(container):
 
         # Bind shutdown callbacks to container
-        fs = Container.map(
+        fs = fields.map(
             lambda self: (
-                partial(self.f, container) if self.bind else 
+                partial(self.f, container) if self.bind else
                 self.f
             ),
             OnShutdown,
