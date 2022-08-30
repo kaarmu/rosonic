@@ -34,7 +34,7 @@ def load(container, recurse=True):
     holds a bag for each field type registered for the container. If the type
     `type` is not found in the dictionary, it will be registered to enable
     recursion. Loading the bags is as simple as looking at all the fields in
-    the container and appending the object to the corresponding bag.
+    the container and adding the object to the corresponding bag.
 
     Args:
         container (type)
@@ -50,7 +50,7 @@ def load(container, recurse=True):
     for t, bag in bags.items():
         for _, x in vars(container).items():
             if isinstance(x, t):
-                bag.append(x)
+                bag.add(x)
 
     # Load bags recursively
     if recurse:
@@ -81,7 +81,7 @@ def register(*types):
     def decorator(cls):
         for t in types:
             bags = getattr(cls, BAGS_FIELD, {})
-            bags[t] = []
+            bags[t] = set()
             setattr(cls, BAGS_FIELD, bags)
         return cls
 

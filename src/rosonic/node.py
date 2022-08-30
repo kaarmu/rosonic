@@ -10,6 +10,7 @@ from .parameter import Parameter
 from .on_shutdown import OnShutdown
 
 
+@fields.register(OnShutdown)
 class Program(object):
     """
     The default structure of a rosonic program.
@@ -21,9 +22,17 @@ class Program(object):
     """
 
     def __new__(cls, *args, **kwargs):
+
+        fields.load(cls)
+
         self = super(Program, cls).__new__(cls)
-        self.__init__(*args, **kwargs)
-        self.main()
+
+        try:
+            self.__init__(*args, **kwargs)
+            self.main()
+        finally:
+            OnShutdown.process_all(self)
+
         return self
 
     def __init__(self):
@@ -40,7 +49,7 @@ class Program(object):
         rospy.spin()
 
 
-@fields.register(Argument, Parameter, OnShutdown, Timer, Rate)
+@fields.register(Argument, Parameter, Timer, Rate)
 class Node(Program):
 
     # For convenience...
@@ -63,7 +72,6 @@ class Node(Program):
 
         fields.load(cls)
 
-        OnShutdown.process_all(cls)
         Rate.process_all(cls)
         Timer.process_all(cls)
 
