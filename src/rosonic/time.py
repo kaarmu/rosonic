@@ -6,21 +6,13 @@ from . import fields
 
 class Rate(object):
 
-    def __init__(self, hz, reset=False):
+    def __init__(self, hz, reset=False, immediate=False):
         self.hz = hz
         self.reset = reset
         self.rate = None
 
-    def process(self):
-        self.timer = rospy.Rate(self.hz, self.reset)
-
-    @staticmethod
-    def process_all(container):
-        fields.map(
-            Rate.process,
-            Rate,
-            container,
-        )
+        if immediate:
+            self.process()
 
     def __call__(self, f):
 
@@ -31,27 +23,40 @@ class Rate(object):
             finally:
                 self.timer.sleep()
 
-        self.f = wrapper
+        self.inner_func = wrapper
 
         return self
 
     def __get__(self, instance, owner):
-        return partial(self.f, instance)
+        return partial(self.inner_func, instance)
+
+    @staticmethod
+    def process_all(container):
+        fields.map(
+            Rate.process,
+            Rate,
+            container,
+        )
+
+    def process(self):
+        self.timer = rospy.Rate(self.hz, self.reset)
 
 
 class Timer(object):
 
-    def __init__(self, period, oneshot=False, reset=False, autostart=True):
+    def __init__(self, period, oneshot=False, reset=False, immediate=False):
         self.period = rospy.Duration.from_sec(period)
         self.callback = None
         self.oneshot = oneshot
         self.reset = reset
-        self.autostart = autostart
         self.timer = None
 
-    def process(self):
-        if self.autostart:
-            self.start()
+        if immediate:
+            self.process()
+
+    def __call__(self, f):
+        self.callback = f
+        return self
 
     @staticmethod
     def process_all(container):
@@ -61,6 +66,9 @@ class Timer(object):
             container,
         )
 
+    def process(self):
+        self.start()
+
     def start(self):
         assert self.callback is not None, 'Missing callback'
         self.timer = rospy.Timer(self.period, self.callback, self.oneshot, self.reset)
@@ -68,8 +76,3 @@ class Timer(object):
     def cancel(self):
         assert self.timer is not None, 'Missing timer'
         self.timer.shutdown()
-
-    def __call__(self, f):
-        self.callback = f
-        return self
-

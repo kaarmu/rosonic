@@ -10,20 +10,34 @@ from .parameter import Parameter
 from .on_shutdown import OnShutdown
 
 
-@fields.register(OnShutdown)
+@fields.register(OnShutdown, Timer, Rate)
 class Program(object):
     """
     The default structure of a rosonic program.
 
     rosonic sees a program like a process that can either run on the main
     thread or separate. The main thread should of course use the `Node` class,
-    however, other program-like processes can run on other threads. They can
-    utilize the ThreadedComponent that integrates well with rosonic fields.
+    however, `SubProgram` will be run on a separate thread.
     """
+
+    # For convenience...
+    logdebug = staticmethod(rospy.logdebug)
+    logwarn = staticmethod(rospy.logwarn)
+    loginfo = staticmethod(rospy.loginfo)
+    logerr = staticmethod(rospy.logerr)
+    logfatal = staticmethod(rospy.logfatal)
+    is_shutdown = staticmethod(rospy.is_shutdown)
 
     def __new__(cls, *args, **kwargs):
 
+        ## Process registered fields
+
         fields.load(cls)
+
+        Rate.process_all(cls)
+        Timer.process_all(cls)
+
+        ## Run program
 
         self = super(Program, cls).__new__(cls)
 
@@ -48,17 +62,14 @@ class Program(object):
     def spin(self):
         rospy.spin()
 
+    @staticmethod
+    def sleep(time):
+        """Perform rospy.sleep for time amount of seconds"""
+        rospy.sleep(rospy.Duration.from_sec(time))
 
-@fields.register(Argument, Parameter, Timer, Rate)
+
+@fields.register(Argument, Parameter)
 class Node(Program):
-
-    # For convenience...
-    logdebug = staticmethod(rospy.logdebug)
-    logwarn = staticmethod(rospy.logwarn)
-    loginfo = staticmethod(rospy.loginfo)
-    logerr = staticmethod(rospy.logerr)
-    logfatal = staticmethod(rospy.logfatal)
-    is_shutdown = staticmethod(rospy.is_shutdown)
 
     def __new__(cls, process_params=True, process_args=True, description=None, **kwargs):
 
@@ -71,9 +82,6 @@ class Node(Program):
         ## Process registered fields
 
         fields.load(cls)
-
-        Rate.process_all(cls)
-        Timer.process_all(cls)
 
         if process_args:
             Argument.process_all(cls, prog=cls.name.base, description=description)
@@ -104,40 +112,42 @@ class Node(Program):
         self.log('=> %s', str(msg) % args, **kwargs)
 
     @staticmethod
-    def sleep(time):
-        """Perform rospy.sleep for time amount of seconds"""
-        rospy.sleep(rospy.Duration.from_sec(time))
-
-    @staticmethod
     def shutdown(reason, *args):
         """Trigger shutdown"""
         rospy.signal_shutdown(str(reason) % args)
 
 
-class Thread(Program):
+class SubProgram(Program):
     """
     This is a program that runs on a thread.
     """
 
     def __new__(cls, *args, **kwargs):
 
-        cls.thread = threading.Thread(target=cls.run, args=args, kwargs=kwargs)
-        cls.event = threading.Event()
-
-        # useful methods...
-        cls.join = cls.thread.join
-        cls.release = cls.event.set
-        cls.wait = cls.event.wait
+        cls._thread = threading.Thread(target=cls.run, args=args, kwargs=kwargs)
+        cls._events = {}
 
         return cls
 
     @classmethod
-    def run(cls, *args, **kwargs):
-        # Complete construction (includes calling __init__) and run program
-        return super(Thread, cls).__new__(cls, *args, **kwargs)
+    def create_event(cls, name):
+        cls._events[name] = threading.Event()
 
     @classmethod
-    def start(cls, timeout=0):
+    def wait_for(cls, name, timeout=None):
+        cls._events[name].wait(timeout)
+
+    @classmethod
+    def release(cls, name):
+        cls._events[name].set()
+
+    @classmethod
+    def run(cls, *args, **kwargs):
+        # Complete construction (includes calling __init__) and run program
+        return super(SubProgram, cls).__new__(cls, *args, **kwargs)
+
+    @classmethod
+    def start(cls):
         """
         Start the threaded component.
 
@@ -149,8 +159,7 @@ class Thread(Program):
                 `timeout == 0` then the caller will not be blocked at all.
         """
 
-        cls.thread.start()
+        cls._thread.start()
 
-        if timeout:
-            cls.wait(timeout if timeout > 0 else None)
-
+    def join(self, *args, **kwargs):
+        return self._thread.join(*args, **kwargs)
