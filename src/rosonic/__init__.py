@@ -1,4 +1,4 @@
-from .node import Program, Node, Thread
+from .node import Program, Node, SubProgram
 from .argument import Argument
 from .parameter import Parameter
 from .name import Name
@@ -8,7 +8,7 @@ from .on_shutdown import OnShutdown
 __all__ = [
     'Program',
     'Node',
-    'Thread',
+    'SubProgram',
     'Argument',
     'Parameter',
     'Name',
