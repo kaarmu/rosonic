@@ -1,28 +1,35 @@
 from functools import partial
+from typing import Callable, Union
 
 import rospy
 
 from . import fields
+from .fields import Field, FieldContainer
 
+_Meth = Callable[[FieldContainer], None]
+_Func = Callable[[], None]
 
-class OnShutdown(object):
+class OnShutdown(Field):
 
-    def __init__(self, bind=True):
+    bind: bool
+    fn: Union[_Meth, _Func]
+
+    def __init__(self, bind: bool = True):
         self.bind = bind
-        self.f = lambda _: None
+        self.fn = lambda _: None
 
-    def __call__(self, f):
-        self.f = f
+    def __call__(self, fn: Union[_Meth, _Func]):
+        self.fn = fn
         return self
 
     @staticmethod
-    def process_all(container):
+    def process_all(container: FieldContainer):
 
         # Bind shutdown callbacks to container
         fs = fields.map(
             lambda self: (
-                partial(self.f, container) if self.bind else
-                self.f
+                partial(self.fn, container) if self.bind else
+                self.fn
             ),
             OnShutdown,
             container

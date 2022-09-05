@@ -1,78 +1,105 @@
 from functools import partial, wraps
+from typing import TypeVar, Union
 
 import rospy
 
-from . import fields
+from .fields import Field
 
-class Rate(object):
 
-    def __init__(self, hz, reset=False, immediate=False):
+__all__ = [
+    'Rate',
+    'Timer',
+]
+
+
+T = TypeVar('T')
+
+
+class Rate(Field):
+
+    def __init__(self, hz: int, reset: bool = False, immediate: bool = False):
+
         self.hz = hz
         self.reset = reset
         self.rate = None
 
         if immediate:
-            self.process()
+            self.process_one()
 
-    def __call__(self, f):
+    def __call__(self, fn) -> 'Rate':
 
-        @wraps(f)
+        @wraps(fn)
         def wrapper(*args, **kwargs):
             try:
-                return f(*args, **kwargs)
+                return fn(*args, **kwargs)
             finally:
                 self.timer.sleep()
 
-        self.inner_func = wrapper
+        self.fn = wrapper
 
         return self
 
     def __get__(self, instance, owner):
-        return partial(self.inner_func, instance)
+        return partial(self.fn, instance)
 
-    @staticmethod
-    def process_all(container):
-        fields.map(
-            Rate.process,
-            Rate,
-            container,
-        )
-
-    def process(self):
+    def process_one(self):
         self.timer = rospy.Rate(self.hz, self.reset)
 
 
-class Timer(object):
+class Timer(Field):
 
-    def __init__(self, period, oneshot=False, reset=False, immediate=False):
+    def __init__(
+        self,
+        period: Union[int, float],
+        oneshot: bool = False,
+        reset: bool = False,
+        bind: bool = True,
+        immediate: bool = False,
+    ):
+
         self.period = rospy.Duration.from_sec(period)
         self.callback = None
         self.oneshot = oneshot
         self.reset = reset
         self.timer = None
+        self.fn = lambda _: None
 
-        if immediate:
-            self.process()
+        self.bind = bind
+        self.immediate = immediate
 
-    def __call__(self, f):
-        self.callback = f
+    def __call__(self, fn):
+        self.fn = fn
         return self
 
+    def process_one(self, container):
+
+        if self.bind:
+            callback = lambda *a, **k: self.fn(container, *a, **k)
+        else:
+            callback = self.fn
+
+        def start():
+            self.timer = rospy.Timer(
+                self.period,
+                callback,
+                self.oneshot,
+                self.reset,
+            )
+
+        self.start = start
+
+        if self.immediate:
+            self.start()
+
+    @classmethod
+    def process_all(cls, container):
+        super().process_all(container, container)
+
     @staticmethod
-    def process_all(container):
-        fields.map(
-            Timer.process,
-            Timer,
-            container,
-        )
-
-    def process(self):
-        self.start()
-
-    def start(self):
-        assert self.callback is not None, 'Missing callback'
-        self.timer = rospy.Timer(self.period, self.callback, self.oneshot, self.reset)
+    def start() -> None:
+        raise Exception('Timer has not been processed yet')
 
     def cancel(self):
         assert self.timer is not None, 'Missing timer'
         self.timer.shutdown()
+

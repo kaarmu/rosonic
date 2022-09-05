@@ -1,8 +1,16 @@
+from typing import Union, Sequence
+
 import rospy
 
 class Name(object):
 
-    def __init__(self, name=None, namespace=None, is_private=False, is_global=False):
+    def __init__(
+        self,
+        name: Union[str, None] = None,
+        namespace: Union[Sequence[str], str, None] = None,
+        is_private: bool = False,
+        is_global: bool = False,
+    ):
 
         if name is None:
             name = rospy.get_name()
@@ -24,7 +32,8 @@ class Name(object):
             self.is_global = True
             self.is_basename = False
 
-        if not isinstance(namespace, (str, list, tuple)):
+        # str is a Sequence but for semantics...
+        if not isinstance(namespace, (Sequence, str)):
             raise TypeError('Invalid type on argument namespace, expected str, list or tuple')
 
         if isinstance(namespace, str):
@@ -50,10 +59,10 @@ class Name(object):
         self.namespace.extend(parts[:-1])
         self.base = parts[-1]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Name({})'.format(str(self))
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = ''
         if self.is_private:
             s += '~'
@@ -62,7 +71,7 @@ class Name(object):
         s += '/'.join(self.namespace + [self.base])
         return s
 
-    def replace_base(self, other):
+    def replace_base(self, other: Union['Name', str]) -> 'Name':
         """Replace base of self with other."""
         if isinstance(other, str):
             other = Name(other)

@@ -1,56 +1,57 @@
+from concurrent.futures import Future
 from copy import deepcopy
+from typing import Any, Callable
 
 import rospy
 
-from .name import Name
 from . import fields
+from .fields import Field, FieldContainer
+from .name import Name
 
 class ParameterError(Exception):
     pass
 
-class Parameter(object):
+class Parameter(Field):
 
-    def __init__(self, name, value=None, optional=True, **kwargs):
+    name: Name
 
-        self.is_loaded = False
-        self.is_optional = optional or value is not None
-        self.func_stack = []
+    _fut: Future
 
+    def __init__(self, name, value=None, optional=False, **kwargs):
         self.name = Name(name, **kwargs)
         self.value = value
+        self.is_optional = optional or value is not None
+        self._fut = Future()
 
-    def __repr__(self):
-        return 'Parameter({}, {})'.format(str(self.name), self.value)
+    def __repr__(self) -> str:
+        return 'Parameter({})'.format(str(self.name))
 
     def __get__(self, instance, owner):
-        return self.value if self.is_loaded else self
+        return self._fut.result()
 
     def process(self):
 
-        if self.is_optional:
-            self.value = rospy.get_param(str(self.name), self.value)
-        elif rospy.has_param(str(self.name)):
-            self.value = rospy.get_param(str(self.name))
+        if rospy.has_param(str(self.name)):
+            value = rospy.get_param(str(self.name))
+        elif self.is_optional:
+            value = self.value
         else:
             raise ParameterError('Parameter server does not recognize "%s"' % str(self.name))
 
-        for func in self.func_stack:
-            self.value = func(self.value)
-
-        self.is_loaded = True
+        self._fut.set_result(value)
 
     @staticmethod
-    def process_all(container):
+    def process_all(container: FieldContainer):
         fields.map(
             Parameter.process,
             Parameter,
             container,
         )
 
-    def copy(self):
+    def copy(self) -> 'Parameter':
         return deepcopy(self)
 
-    def then(self, func):
-        self.func_stack.append(func)
+    def then(self, fn: Callable[[Any], None]) -> 'Parameter':
+        self._fut.add_done_callback(lambda fut: fn(fut.result()))
         return self
 
