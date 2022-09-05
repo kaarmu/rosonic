@@ -10,7 +10,7 @@ from .parameter import Parameter
 from .on_shutdown import OnShutdown
 
 
-@fields.register(OnShutdown, Timer, Rate)
+@fields.register(Timer, Rate)
 class Program(object):
     """
     The default structure of a rosonic program.
@@ -37,27 +37,16 @@ class Program(object):
         Rate.process_all(cls)
         Timer.process_all(cls)
 
-        ## Run program
+        ## Create Program object
 
-        self = super(Program, cls).__new__(cls)
-
-        try:
-            self.__init__(*args, **kwargs)
-            self.main()
-        finally:
-            OnShutdown.process_all(self)
-
-        return self
-
-    def __init__(self):
-        pass
+        return super(Program, cls).__new__(cls, *args, **kwargs)
 
     def main(self):
         while self.keep_alive():
             self.spin()
 
     def keep_alive(self):
-        return True
+        return not self.is_shutdown()
 
     def spin(self):
         rospy.spin()
@@ -68,7 +57,7 @@ class Program(object):
         rospy.sleep(rospy.Duration.from_sec(time))
 
 
-@fields.register(Argument, Parameter)
+@fields.register(OnShutdown, Argument, Parameter)
 class Node(Program):
 
     def __new__(cls, process_params=True, process_args=True, description=None, **kwargs):
@@ -91,10 +80,16 @@ class Node(Program):
 
         ## Run node
 
+        self = super(Node, cls).__new__(cls)
+
         try:
-            return super(Node, cls).__new__(cls)
+            self.__init__()
+            self.main()
         finally:
-            cls.shutdown('Node "%s" finished', cls.name.base)
+            OnShutdown.process_all(self)
+
+        return self
+
 
     #
     # Wrapped rospy concepts
@@ -123,43 +118,27 @@ class SubProgram(Program):
     """
 
     def __new__(cls, *args, **kwargs):
+        # cls._thread = threading.Thread(target=cls.main)
+        cls._stop_event = threading.Event()
+        self = super(SubProgram, cls).__new__(cls)
+        self.__init__(*args, **kwargs)
+        self._thread = threading.Thread(target=self.main)
+        return self
 
-        cls._thread = threading.Thread(target=cls.run, args=args, kwargs=kwargs)
-        cls._events = {}
+    def start(self):
+        """Start the threaded component. """
+        self._thread.start()
+        return self
 
-        return cls
+    def keep_alive(self):
+        return not (self.is_shutdown() or self._stop_event.is_set())
 
-    @classmethod
-    def create_event(cls, name):
-        cls._events[name] = threading.Event()
-
-    @classmethod
-    def wait_for(cls, name, timeout=None):
-        cls._events[name].wait(timeout)
-
-    @classmethod
-    def release(cls, name):
-        cls._events[name].set()
-
-    @classmethod
-    def run(cls, *args, **kwargs):
-        # Complete construction (includes calling __init__) and run program
-        return super(SubProgram, cls).__new__(cls, *args, **kwargs)
-
-    @classmethod
-    def start(cls):
-        """
-        Start the threaded component.
-
-        Args:
-            timeout (float): A threaded component has the possibility to block
-                the caller until the component is ready. If `timeout > 0` then
-                the caller will be blocked at most `timeout` seconds. If
-                `timeout < 0` then the caller will be blocked indefinetely. If
-                `timeout == 0` then the caller will not be blocked at all.
-        """
-
-        cls._thread.start()
+    def stop(self):
+        return self._stop_event.set()
 
     def join(self, *args, **kwargs):
         return self._thread.join(*args, **kwargs)
+
+    def stop_and_join(self):
+        self.stop()
+        self.join()
