@@ -5,7 +5,7 @@ with open('README.md') as f:
 
 setup(
     name='rosonic',
-    version='0.2.2',
+    version='0.3.0',
     description='Write pythonic ROS nodes, fast and comfortably',
     author='Kaj Munhoz Arfvidsson',
     author_email='kajarf@kth.se',
@@ -13,7 +13,7 @@ setup(
     license='MIT',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    python_requires='>=2.7',
+    python_requires='>=3.8',
     extras_require={
         'docs': ['mkdocs', 'mkdocs-with-pdf', ],
     },
