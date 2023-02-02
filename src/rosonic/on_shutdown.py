@@ -1,41 +1,32 @@
 from functools import partial
-from typing import Callable, Union
+from typing import (
+    Callable,
+    Generic,
+    TypeVar,
+)
 
-import rospy
+from .node import Node, NodeAttr
 
-from . import fields
-from .fields import Field, FieldContainer
+__all__ = [
+    'on_shutdown',
+]
 
-_Meth = Callable[[FieldContainer], None]
-_Func = Callable[[], None]
+T = TypeVar('T', bound=Node)
+class on_shutdown(NodeAttr, Generic[T]):
 
-class OnShutdown(Field):
+    _bind: bool
+    _fn: Callable[..., None]
 
-    bind: bool
-    fn: Union[_Meth, _Func]
+    def __init__(self, is_method: bool = True):
+        self._bind = is_method # bind func to instance if it is a method
 
-    def __init__(self, bind: bool = True):
-        self.bind = bind
-        self.fn = lambda _: None
-
-    def __call__(self, fn: Union[_Meth, _Func]):
-        self.fn = fn
+    def __call__(self, fn: Callable[..., None]) -> 'on_shutdown':
+        self._fn = fn
         return self
 
-    @staticmethod
-    def process_all(container: FieldContainer):
+    def on_enter(self, instance: T) -> None:
+        pass
 
-        # Bind shutdown callbacks to container
-        fs = fields.map(
-            lambda self: (
-                partial(self.fn, container) if self.bind else
-                self.fn
-            ),
-            OnShutdown,
-            container
-        )
-
-        # register callbacks with rospy
-        for f in fs:
-            rospy.on_shutdown(f)
-
+    def on_exit(self, instance: T) -> None:
+        fn = partial(self._fn, instance) if self._bind else self._fn
+        return fn()

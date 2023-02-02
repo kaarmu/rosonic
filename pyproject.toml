@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rosonic"
+version = "0.4.0"
+authors = [
+    { name="Kaj Munhoz Arfvidsson", email="kajarf@kth.se" },
+]
+description = "Write pythonic ROS nodes, fast and comfortably"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "rospy",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/kaarmu/rosonic"
+"Wiki" = "https://kaarmu.github.io/rosonic"

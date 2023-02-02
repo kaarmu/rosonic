@@ -1,12 +1,23 @@
-from typing import Union, Sequence
+from typing import List, Union, Sequence
 
 import rospy
 
-class Name(object):
+__all__ = [
+    'Name',
+]
+
+class Name:
+
+    name: str
+    namespace: List[str]
+    is_global: bool
+    is_private: bool
+    is_basename: bool
 
     def __init__(
         self,
         name: Union[str, None] = None,
+        *,
         namespace: Union[Sequence[str], str, None] = None,
         is_private: bool = False,
         is_global: bool = False,
